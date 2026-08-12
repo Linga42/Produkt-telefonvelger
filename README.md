@@ -158,6 +158,83 @@ node tests/telefoner-csv.test.js
 
 ## Publisering
 
-Last opp hele `produktvelger/`-mappen (inkl. `bilder/`) til GitHub
-Pages-repoet, og lim inn en `<script>`- eller iframe-referanse til
-`index.html` i riktig Webmercs-side.
+### 1. Push til GitHub
+
+Last opp hele `Produktvelger/`-mappen (inkl. `bilder/` og `data/`) til
+GitHub Pages-repoet. Push til hovedgrenen - det finnes ingen CI eller
+staging, det du pusher er det som til slutt blir live.
+
+### 2. Sett `config.js` til live-adressene
+
+**Viktig, lett å glemme:** `config.js` peker som standard på den
+*live* GitHub Pages-URL-en for `dataBaseUrl` og `imgBaseUrl` - de må
+IKKE stå på `./data/`/`./bilder/` (det er kun for lokal testing på
+localhost). Er de satt til relative stier når siden limes inn på
+shop.vodacom.no, klarer den ikke å finne data-/bildefilene sine
+(HTML-en kjører jo da fra `shop.vodacom.no` sitt domene, ikke fra
+GitHub Pages). Dobbeltsjekk før publisering:
+
+```js
+window.PV_CONFIG = {
+  dataBaseUrl: "https://<brukernavn>.github.io/Produktvelger/data/",
+  imgBaseUrl: "https://<brukernavn>.github.io/Produktvelger/bilder/"
+};
+```
+
+### 3. Vent på GitHub Pages-cachen
+
+Endringer er normalt live innen ca. 10 minutter etter push (GitHub
+Pages sin egen cache). Sjekk gjerne direkte på
+`https://<brukernavn>.github.io/Produktvelger/` før du limer noe inn
+i Webmercs, så du vet at siden i seg selv fungerer.
+
+### 4. Lim inn i Webmercs
+
+To måter å bygge den inn på, avhengig av hvordan siden skal sitte i
+Webmercs-CMS-en:
+
+**A) Direkte som HTML-innhold** (samme prinsipp som telefon-
+konfiguratoren opprinnelig brukte) - limes rett inn i forsiden eller
+en Info-seksjon i Webmercs sin editor:
+
+```html
+<div class="pv-container" id="pv-container-root"></div>
+<link rel="stylesheet" href="https://<brukernavn>.github.io/Produktvelger/styles/theme.css">
+<link rel="stylesheet" href="https://<brukernavn>.github.io/Produktvelger/styles/engine.css">
+<link rel="stylesheet" href="https://<brukernavn>.github.io/Produktvelger/styles/telefon-konfigurator.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://<brukernavn>.github.io/Produktvelger/config.js"></script>
+<script src="https://<brukernavn>.github.io/Produktvelger/engine/pricing.js"></script>
+<script src="https://<brukernavn>.github.io/Produktvelger/engine/cart.js"></script>
+<script src="https://<brukernavn>.github.io/Produktvelger/engine/kontrast.js"></script>
+<script src="https://<brukernavn>.github.io/Produktvelger/engine/telefon-konfigurator.js"></script>
+<script src="https://<brukernavn>.github.io/Produktvelger/engine/render.js"></script>
+```
+
+Dette er den ANBEFALTE måten: siden kjører da direkte på
+`shop.vodacom.no` sitt eget domene, som er en forutsetning for at
+same-origin-avhengige funksjoner (live pris og "legg i handlekurv")
+skal virke i det hele tatt - se punkt under.
+
+**B) Som iframe** - enklere å lime inn, men "legg i handlekurv" og
+live pris vil IKKE fungere (iframen kjører fortsatt på
+`github.io`-domenet, ikke `shop.vodacom.no`, så same-origin-kravet
+brytes). Bruk kun denne varianten hvis produktvelgeren skal fungere
+som en ren "se produkter og klikk deg videre"-side:
+
+```html
+<iframe
+  src="https://<brukernavn>.github.io/Produktvelger/index.html"
+  style="width:100%; border:0; min-height:1200px;"
+  title="Produktvelger">
+</iframe>
+```
+
+### 5. Samme-origin-påminnelse
+
+"Legg i handlekurv", "Kjøp"-knappen i telefonvelgeren og live pris er
+alle avhengige av at siden faktisk kjører på `shop.vodacom.no` sitt
+eget domene (alternativ A over) - ikke en iframe, ikke lokal testing.
+Er dette ikke oppfylt, faller alt automatisk tilbake til lenker til
+produktsiden i stedet ("Se pris i butikk" / åpne produktsiden) - det
+er forventet oppførsel, ikke en feil, se "Lokal testing" over.
