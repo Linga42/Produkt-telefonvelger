@@ -15,6 +15,6 @@
   imgBaseUrl:  "https://dittbrukernavn.github.io/Produktvelger/bilder/"
 */
 window.PV_CONFIG = {
-  dataBaseUrl: "https://linga42.github.io/Produktvelger/data/",
-  imgBaseUrl: "https://linga42.github.io/Produktvelger/bilder/"
+  dataBaseUrl: "https://linga42.github.io/Produkt-telefonvelger/data/",
+  imgBaseUrl: "https://linga42.github.io/Produkt-telefonvelger/bilder/"
 };
