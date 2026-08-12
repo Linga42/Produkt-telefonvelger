@@ -20,7 +20,19 @@ window.PV = window.PV || {};
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>';
 
   async function init() {
+    const header = document.getElementById("pv-header");
+    const toolbar = document.getElementById("pv-toolbar");
     const app = document.getElementById("pv-app");
+    if (!header || !toolbar || !app) {
+      console.error(
+        'Produktvelger: fant ikke #pv-header, #pv-toolbar og/eller #pv-app i DOM-en. ' +
+        'Embed-koden må inneholde alle tre id-ene nøyaktig som i index.html/README ' +
+        '(f.eks. <div class="pv-container"><header id="pv-header"></header>' +
+        '<div id="pv-toolbar"></div><div id="pv-app"></div></div>) - en forenklet ' +
+        'enkelt-div gjør at siden blir blank.'
+      );
+      return;
+    }
     let settings, rows;
 
     try {
