@@ -217,10 +217,18 @@ Webmercs-CMS-en:
 
 **A) Direkte som HTML-innhold** (samme prinsipp som telefon-
 konfiguratoren opprinnelig brukte) - limes rett inn i forsiden eller
-en Info-seksjon i Webmercs sin editor:
+en Info-seksjon i Webmercs sin editor. **De tre id-ene inni
+`pv-container` (`pv-header`, `pv-toolbar`, `pv-app`) er påkrevd
+akkurat som vist** - `render.js` leter etter disse spesifikke
+elementene og feiler stille (blank side) hvis de mangler eller er
+forenklet til én enkelt div:
 
 ```html
-<div class="pv-container" id="pv-container-root"></div>
+<div class="pv-container">
+  <header class="pv-header" id="pv-header"></header>
+  <div class="pv-toolbar" id="pv-toolbar"></div>
+  <div id="pv-app"></div>
+</div>
 <link rel="stylesheet" href="https://linga42.github.io/Produkt-telefonvelger/styles/theme.css">
 <link rel="stylesheet" href="https://linga42.github.io/Produkt-telefonvelger/styles/engine.css">
 <link rel="stylesheet" href="https://linga42.github.io/Produkt-telefonvelger/styles/telefon-konfigurator.css">
