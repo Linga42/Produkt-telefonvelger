@@ -295,12 +295,18 @@
 }
 
 /* Pris for et enkelt tilbehørsprodukt (Krav 6) - mellom knappen og
-   "Se produktside"-lenken. Vises kun når prisen faktisk ble hentet. */
+   "Se produktside"-lenken. Vises når prisen ble hentet, eller som
+   "Se pris i butikk"-tekst ved same-origin-feil (lokal testing). */
 .tk-tilbehor-pris {
   align-self: center;
   font-size: 0.95rem;
   color: #333;
   white-space: nowrap;
+}
+
+.tk-tilbehor-pris-lenke {
+  color: #4DAD35;
+  text-decoration: underline;
 }
 
 .tk-tilbehor-rad .tk-pakke:hover:not(:disabled) {
