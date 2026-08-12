@@ -645,7 +645,10 @@ window.PV.Telefon = (function () {
            Kun for enkeltprodukter (vare.url) - en pakke med flere
            produkter (vare.produkter) har ikke én entydig pris å vise,
            så prisraden hoppes over for pakker. Samme henting/cache/
-           feilregler som for telefonmodellen (window.PV.Pricing). */
+           feilregler som for telefonmodellen (window.PV.Pricing) -
+           inkl. samme TypeError-skille: same-origin/nettverksfeil
+           (typisk lokal testing) -> "Se pris i butikk", mens en
+           vellykket forespørsel uten brukbar pris -> ingen prisrad. */
         if (vare.url) {
           var pakkeId = produktId(vare.url);
           if (pakkeId) {
@@ -655,11 +658,13 @@ window.PV.Telefon = (function () {
               .then(function (pris) {
                 prisEl.textContent = 'Pris: ' + pris;
               })
-              .catch(function () {
-                /* Krav 5: ingen pris og ingen plassholder hvis henting
-                   feiler av andre grunner enn same-origin - fjern det
-                   tomme elementet igjen i stedet for å la det stå. */
-                if (prisEl.parentNode) prisEl.parentNode.removeChild(prisEl);
+              .catch(function (err) {
+                if (err instanceof TypeError) {
+                  prisEl.textContent = 'Se pris i butikk';
+                  prisEl.classList.add('tk-tilbehor-pris-lenke');
+                } else if (prisEl.parentNode) {
+                  prisEl.parentNode.removeChild(prisEl);
+                }
               });
             rad.appendChild(prisEl);
           }
