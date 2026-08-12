@@ -4,9 +4,8 @@
    (se ARCHITECTURE.md og PROSJEKT-README for hvorfor).
 
    Produktdata (merke/modell/kapasitet/farge/fargekode/lenke/bilde)
-   leses fra data/telefoner.csv - se README for CSV-format.
-   Ekstrautstyr (TILBEHOR) er fortsatt definert som JS-data lenger
-   ned i denne filen, siden det ikke er del av CSV-kravet.
+   leses fra data/telefoner.csv, og ekstrautstyr (merke/modell/navn/
+   lenke) fra data/telefon-tilbehor.csv - se README for CSV-format.
 
    Integrert i produktvelgeren som egen kategori/fane ("Telefon").
    render.js kaller window.PV.Telefon.init() når fanens seksjon og
@@ -20,62 +19,12 @@
    ========================================================== */
 window.PV = window.PV || {};
 
-/* ==========================================================
-   EKSTRAUTSTYR - enkeltprodukter med egen antallsvelger.
-   Definert per modell. Oppføringer under nøkkelen '*' er
-   UNIVERSALE og vises for alle modeller (f.eks. lader).
-   Hver oppføring: navn (knappetekst) + url (produktside).
-   Vil du ha en kombiknapp som legger flere varer i kurven
-   med ett klikk, bruk produkter: ['url1','url2'] i stedet
-   for url.
-
-   Flyttet hit fra den tidligere varianter.js - selve
-   telefonvariantene (merke/modell/kapasitet/farge/fargekode)
-   kommer nå fra data/telefoner.csv, se lenger ned i filen.
-   ========================================================== */
-var TILBEHOR = {
-  'Galaxy S26': [
-    { navn: 'Deksel',          url: 'https://shop.vodacom.no/key-lofoten-magsafe-sam-s26/cat-p/c/p1006489662' },
-    { navn: 'Lommebok',        url: 'https://shop.vodacom.no/key-nordfjord-wallet-sam-s26/cat-p/c/p1006489664' },
-    { navn: 'Skjermbeskytter', url: 'https://shop.vodacom.no/key-eco-glass-sam-s26/cat-p/c/p1006773135' }
-  ],
-  'Galaxy S26+': [
-    { navn: 'Deksel',          url: 'https://shop.vodacom.no/key-lofoten-magsafe-sam-s26/cat-p/c/p1006498313' },
-    { navn: 'Lommebok',        url: 'https://shop.vodacom.no/key-nordfjord-wallet-sam-s26/cat-p/c/p1006489665' },
-    { navn: 'Skjermbeskytter', url: 'https://shop.vodacom.no/key-eco-glass-sam-s26/cat-p/c/p1006773136' }
-  ],
-  'Galaxy S26 Ultra': [
-    { navn: 'Deksel',          url: 'https://shop.vodacom.no/key-lofoten-magsafe-sam-s26/cat-p/c/p1006489663' },
-    { navn: 'Lommebok',        url: 'https://shop.vodacom.no/key-nordfjord-wallet-sam-s26/cat-p/c/p1006489666' },
-    { navn: 'Skjermbeskytter', url: 'https://shop.vodacom.no/key-eco-glass-sam-s26/cat-p/c/p1006773137' }
-  ],
-  'iPhone 17': [
-    { navn: 'Deksel',          url: 'https://shop.vodacom.no/key-lofoten-magsafe-ip17/cat-p/c/p1006233812' },
-    { navn: 'Lommebok',        url: 'https://shop.vodacom.no/key-nordfjord-wallet-ip17-black/cat-p/c/p1006233832' },
-    { navn: 'Skjermbeskytter', url: 'https://shop.vodacom.no/key-eco-glass-ip16-pro/cat-p/c/p1005022127' }
-  ],
-  'iPhone 17 Pro': [
-    { navn: 'Deksel',          url: 'https://shop.vodacom.no/key-lofoten-magsafe-ip17-pro/cat-p/c/p1006233814' },
-    { navn: 'Lommebok',        url: 'https://shop.vodacom.no/key-nordfjord-wallet-ip17-pro/cat-p/c/p1006233834' },
-    { navn: 'Skjermbeskytter', url: 'https://shop.vodacom.no/key-eco-glass-ip16-pro/cat-p/c/p1005022127' }
-  ],
-  'iPhone 17 Pro Max': [
-    { navn: 'Deksel',          url: 'https://shop.vodacom.no/key-lofoten-magsafe-ip17-pro/cat-p/c/p1006233815' },
-    { navn: 'Lommebok',        url: 'https://shop.vodacom.no/key-nordfjord-wallet-ip17-pro/cat-p/c/p1006233835' },
-    { navn: 'Skjermbeskytter', url: 'https://shop.vodacom.no/key-eco-glass-ip16-pro/cat-p/c/p1005022128' }
-  ],
-
-  /* Universale - vises for alle modeller */
-  '*': [
-    { navn: 'Lader', url: 'https://shop.vodacom.no/unisynk-usb-c-charger-kit-eu/cat-p/c/p1003746319' }
-  ]
-};
-
 window.PV.Telefon = (function () {
   'use strict';
 
   var DATA_DIR = (window.PV_CONFIG && window.PV_CONFIG.dataBaseUrl) || './data/';
   var TELEFON_CSV_FIL = DATA_DIR + 'telefoner.csv';
+  var TILBEHOR_CSV_FIL = DATA_DIR + 'telefon-tilbehor.csv';
   var IMG_BASE = (window.PV_CONFIG && window.PV_CONFIG.imgBaseUrl) || './bilder/';
 
   var PAKREVDE_CSV_FELT = ['Merke', 'Modell', 'Kapasitet', 'Farge'];
@@ -133,10 +82,10 @@ window.PV.Telefon = (function () {
     return bilder;
   }
 
-  function lastTelefonCsv() {
-    return fetch(TELEFON_CSV_FIL)
+  function lastCsv(fil) {
+    return fetch(fil)
       .then(function (res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status + ' ved lasting av ' + TELEFON_CSV_FIL);
+        if (!res.ok) throw new Error('HTTP ' + res.status + ' ved lasting av ' + fil);
         return res.text();
       })
       .then(function (csvText) {
@@ -145,19 +94,36 @@ window.PV.Telefon = (function () {
       });
   }
 
-  /* Varsler i konsollen om en tilbehoersvare mangler et paakrevd felt.
-     Stopper ikke widgeten - bare gjoer det raskt aa finne skrivefeil. */
-  function validerTilbehor() {
-    if (typeof TILBEHOR !== 'undefined') {
-      Object.keys(TILBEHOR).forEach(function (modell) {
-        TILBEHOR[modell].forEach(function (vare, i) {
-          if (!vare.navn || !(vare.url || (vare.produkter && vare.produkter.length))) {
-            console.error('Telefon-konfigurator: TILBEHOR["' + modell + '"][' + i +
-              '] mangler "navn" eller gyldig "url"/"produkter". Sjekk denne filen.');
-          }
-        });
+  /* Bygger tilbehørslisten fra data/telefon-tilbehor.csv. Kolonner:
+     Merke, Modell, Navn, Lenke. Skriv "universal" i Merke-feltet for
+     et tilbehør som skal være tilgjengelig for alle merker/modeller
+     (Modell-feltet ignoreres da og kan stå tomt). Validerer
+     defensivt - en rad som mangler Navn eller Lenke hoppes over med
+     en varsel i konsollen, resten av widgeten påvirkes ikke. */
+  var UNIVERSAL_MERKE = 'universal';
+
+  function byggTilbehorFraCsv(rows) {
+    var ut = [];
+    rows.forEach(function (row, i) {
+      var erUniversal = (row.Merke || '').trim().toLowerCase() === UNIVERSAL_MERKE;
+      var manglerPakrevd = !row.Merke || !String(row.Merke).trim() ||
+        !row.Navn || !String(row.Navn).trim() ||
+        !row.Lenke || !String(row.Lenke).trim() ||
+        (!erUniversal && (!row.Modell || !String(row.Modell).trim()));
+      if (manglerPakrevd) {
+        console.error('Telefon-konfigurator: telefon-tilbehor.csv rad ' + (i + 2) +
+          ' mangler et påkrevd felt (Merke/Navn/Lenke, og Modell med mindre Merke="universal") og hoppes over.');
+        return;
+      }
+      ut.push({
+        merke: row.Merke.trim(),
+        modell: erUniversal ? '' : row.Modell.trim(),
+        universal: erUniversal,
+        navn: row.Navn.trim(),
+        url: row.Lenke.trim()
       });
-    }
+    });
+    return ut;
   }
 
   function init() {
@@ -168,24 +134,27 @@ window.PV.Telefon = (function () {
       return;
     }
 
-    lastTelefonCsv().then(function (rows) {
-      var VARIANTER = byggVarianterFraCsv(rows);
+    Promise.all([
+      lastCsv(TELEFON_CSV_FIL),
+      lastCsv(TILBEHOR_CSV_FIL)
+    ]).then(function (resultater) {
+      var VARIANTER = byggVarianterFraCsv(resultater[0]);
       if (!VARIANTER.length) {
         console.error('Telefon-konfigurator: fant ingen gyldige rader i telefoner.csv.');
         rot.innerHTML = '<p class="tk-feil">Klarte ikke å laste telefondata.</p>';
         return;
       }
       var MODELLBILDER = byggModellbilderFraVarianter(VARIANTER);
-      validerTilbehor();
+      var TILBEHOR = byggTilbehorFraCsv(resultater[1]); // tom liste er OK - bare ingen ekstrautstyr vises
       harInitialisert = true;
-      byggWidget(rot, VARIANTER, MODELLBILDER);
+      byggWidget(rot, VARIANTER, MODELLBILDER, TILBEHOR);
     }).catch(function (err) {
-      console.error('Telefon-konfigurator: klarte ikke å laste telefoner.csv.', err);
+      console.error('Telefon-konfigurator: klarte ikke å laste telefondata/tilbehørsdata.', err);
       rot.innerHTML = '<p class="tk-feil">Klarte ikke å laste telefondata.</p>';
     });
   }
 
-  function byggWidget(rot, VARIANTER, MODELLBILDER) {
+  function byggWidget(rot, VARIANTER, MODELLBILDER, TILBEHOR) {
     rot.className = 'tk-konfigurator';
     rot.innerHTML =
       '<h2 class="tk-tittel">Finn din telefon</h2>' +
@@ -405,7 +374,7 @@ window.PV.Telefon = (function () {
       el('tk-produktlenke').href = variant.url;
       vis('tk-handling');
       visPrisForVariant(variant);
-      visTilbehor(valg.modell);
+      visTilbehor(valg.merke, valg.modell);
     }
 
     /* ---- Kjoep: legger varen i handlekurven via webshoppens
@@ -546,17 +515,17 @@ window.PV.Telefon = (function () {
     });
 
     /* ---- Ekstrautstyr: enkeltprodukter med egen antallsvelger.
-       Definert per modell i TILBEHOR i varianter.js. Oppfoeringer
-       under noekkelen '*' er universale og legges til for ALLE
-       modeller (f.eks. lader). Hver oppfoering har enten
-       url (enkeltprodukt) eller produkter (pakke med flere). ---- */
-    function hentTilbehor(modell) {
-      if (typeof TILBEHOR === 'undefined') return [];
-      return (TILBEHOR[modell] || []).concat(TILBEHOR['*'] || []);
+       Data kommer fra data/telefon-tilbehor.csv (Merke, Modell, Navn,
+       Lenke). En rad med Merke="universal" gjelder for alle
+       merker/modeller (f.eks. lader). ---- */
+    function hentTilbehor(merke, modell) {
+      return TILBEHOR.filter(function (vare) {
+        return vare.universal || (vare.merke === merke && vare.modell === modell);
+      });
     }
 
-    function visTilbehor(modell) {
-      var ting = hentTilbehor(modell);
+    function visTilbehor(merke, modell) {
+      var ting = hentTilbehor(merke, modell);
       var gruppe = el('tk-tilbehor');
       gruppe.innerHTML = '';
       if (!ting.length) { skjul('tk-seksjon-tilbehor'); return; }
@@ -592,12 +561,16 @@ window.PV.Telefon = (function () {
         b.textContent = vare.navn;
 
         b.addEventListener('click', function () {
-          /* Enkeltprodukt (url) eller pakke (produkter) */
+          /* CSV-en (telefon-tilbehor.csv) gir kun én Lenke per rad, så
+             hvert tilbehør er ett enkeltprodukt. Koden håndterer
+             fortsatt vare.produkter (flere URL-er i én "pakke") hvis
+             det skulle bli aktuelt igjen senere - men ingen rad i
+             dagens CSV-format kan uttrykke det. */
           var urler = vare.produkter || (vare.url ? [vare.url] : []);
           var ider = urler.map(produktId).filter(Boolean);
           if (!ider.length) {
             console.error('Telefon-konfigurator: "' + vare.navn +
-              '" mangler gyldige produkt-URL-er (forventer /p<tall>). Sjekk TILBEHOR i denne filen.');
+              '" mangler gyldige produkt-URL-er (forventer /p<tall>). Sjekk telefon-tilbehor.csv.');
             b.textContent = 'Ikke tilgjengelig enn\u00e5';
             b.disabled = true;
             setTimeout(function () {

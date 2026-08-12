@@ -12,6 +12,7 @@ produktvelger/
 ├── data/
 │   ├── produkter.csv          ✅ REDIGER - legg til/fjern produkter her
 │   ├── telefoner.csv          ✅ REDIGER - telefonvarianter, se eget avsnitt under
+│   ├── telefon-tilbehor.csv   ✅ REDIGER - tilbehør per telefon, se eget avsnitt under
 │   └── innstillinger.json     ✅ REDIGER - tekster og gruppe-rekkefølge
 ├── bilder/                    ✅ REDIGER - telefon-produktbilder (.webp)
 ├── styles/
@@ -93,10 +94,30 @@ Samsung,Galaxy S26,256GB,Black,#2C2C2E,https://shop.vodacom.no/.../p1006442059,S
   produktbilde. Samme filnavn kan gå igjen på flere rader/modeller
   (f.eks. deler Galaxy S26 og S26+ bilde bevisst).
 
-**Ekstrautstyr per telefonmodell** (Deksel, Lommebok, Skjermbeskytter,
-Lader) er fortsatt definert som JS-data (`TILBEHOR`) øverst i
-`engine/telefon-konfigurator.js`, siden det ikke er del av
-CSV-kravet for telefonvariantene.
+**Legge til/endre ekstrautstyr (Deksel, Lommebok, Skjermbeskytter,
+Lader):** rediger `data/telefon-tilbehor.csv`. Kolonner:
+
+```
+Merke,Modell,Navn,Lenke
+Samsung,Galaxy S26,Deksel,https://shop.vodacom.no/.../p1006489662
+universal,,Lader,https://shop.vodacom.no/.../p1003746319
+```
+
+- **Merke**: må matche `Merke` i `telefoner.csv` nøyaktig (f.eks.
+  `Samsung`, `iPhone`) - ELLER skriv `universal` (uavhengig av store/
+  små bokstaver) for et tilbehør som skal vises for ALLE merker og
+  modeller (f.eks. laderen).
+- **Modell**: må matche `Modell` i `telefoner.csv` nøyaktig. Kan stå
+  tomt når Merke er `universal` - feltet ignoreres da uansett.
+- **Navn**: knappeteksten, f.eks. "Deksel".
+- **Lenke**: full URL til produktsiden - brukes til kjøp, "Se
+  produktside" og prisvisning, akkurat som i `telefoner.csv`.
+
+En rad som mangler Navn eller Lenke hoppes over (varsel i
+konsollen). Én rad = ett enkeltprodukt - CSV-formatet støtter
+foreløpig ikke "pakker" med flere produkter under én knapp (det
+gjorde den tidligere JS-baserte varianten i prinsippet, men ingen
+faktiske data brukte det).
 
 **Rekkefølge på Telefon-fanen** styres av samme
 `gruppeRekkefolge`-liste i `data/innstillinger.json` som de andre
@@ -151,9 +172,10 @@ testrammeverk, ingen build-steg - i tråd med prosjektets
 build-frie filosofi) for kontrastberegningen og CSV-valideringen:
 
 ```
-npm install papaparse --no-save   # kun nødvendig for CSV-testen, brukes ikke i produksjon
+npm install papaparse --no-save   # kun nødvendig for CSV-testene, brukes ikke i produksjon
 node tests/kontrast.test.js
 node tests/telefoner-csv.test.js
+node tests/telefon-tilbehor-csv.test.js
 ```
 
 ## Publisering
@@ -176,8 +198,8 @@ GitHub Pages). Dobbeltsjekk før publisering:
 
 ```js
 window.PV_CONFIG = {
-  dataBaseUrl: "https://<brukernavn>.github.io/Produktvelger/data/",
-  imgBaseUrl: "https://<brukernavn>.github.io/Produktvelger/bilder/"
+  dataBaseUrl: "https://linga42.github.io/Produkt-telefonvelger/data/",
+  imgBaseUrl: "https://linga42.github.io/Produkt-telefonvelger/bilder/"
 };
 ```
 
@@ -185,7 +207,7 @@ window.PV_CONFIG = {
 
 Endringer er normalt live innen ca. 10 minutter etter push (GitHub
 Pages sin egen cache). Sjekk gjerne direkte på
-`https://<brukernavn>.github.io/Produktvelger/` før du limer noe inn
+`https://linga42.github.io/Produkt-telefonvelger/` før du limer noe inn
 i Webmercs, så du vet at siden i seg selv fungerer.
 
 ### 4. Lim inn i Webmercs
@@ -199,16 +221,16 @@ en Info-seksjon i Webmercs sin editor:
 
 ```html
 <div class="pv-container" id="pv-container-root"></div>
-<link rel="stylesheet" href="https://<brukernavn>.github.io/Produktvelger/styles/theme.css">
-<link rel="stylesheet" href="https://<brukernavn>.github.io/Produktvelger/styles/engine.css">
-<link rel="stylesheet" href="https://<brukernavn>.github.io/Produktvelger/styles/telefon-konfigurator.css">
+<link rel="stylesheet" href="https://linga42.github.io/Produkt-telefonvelger/styles/theme.css">
+<link rel="stylesheet" href="https://linga42.github.io/Produkt-telefonvelger/styles/engine.css">
+<link rel="stylesheet" href="https://linga42.github.io/Produkt-telefonvelger/styles/telefon-konfigurator.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="https://<brukernavn>.github.io/Produktvelger/config.js"></script>
-<script src="https://<brukernavn>.github.io/Produktvelger/engine/pricing.js"></script>
-<script src="https://<brukernavn>.github.io/Produktvelger/engine/cart.js"></script>
-<script src="https://<brukernavn>.github.io/Produktvelger/engine/kontrast.js"></script>
-<script src="https://<brukernavn>.github.io/Produktvelger/engine/telefon-konfigurator.js"></script>
-<script src="https://<brukernavn>.github.io/Produktvelger/engine/render.js"></script>
+<script src="https://linga42.github.io/Produkt-telefonvelger/config.js"></script>
+<script src="https://linga42.github.io/Produkt-telefonvelger/engine/pricing.js"></script>
+<script src="https://linga42.github.io/Produkt-telefonvelger/engine/cart.js"></script>
+<script src="https://linga42.github.io/Produkt-telefonvelger/engine/kontrast.js"></script>
+<script src="https://linga42.github.io/Produkt-telefonvelger/engine/telefon-konfigurator.js"></script>
+<script src="https://linga42.github.io/Produkt-telefonvelger/engine/render.js"></script>
 ```
 
 Dette er den ANBEFALTE måten: siden kjører da direkte på
@@ -224,7 +246,7 @@ som en ren "se produkter og klikk deg videre"-side:
 
 ```html
 <iframe
-  src="https://<brukernavn>.github.io/Produktvelger/index.html"
+  src="https://linga42.github.io/Produkt-telefonvelger/index.html"
   style="width:100%; border:0; min-height:1200px;"
   title="Produktvelger">
 </iframe>
